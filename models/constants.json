@@ -1,0 +1,25 @@
+{
+  "au": {
+    "fa_prior_works": 20.0,
+    "fa_prior_cites": 276.0,
+    "la_prior_works": 91.0,
+    "la_prior_cites": 1989.0,
+    "team_prior_works_max": 112.0,
+    "team_prior_cites_max": 2567.5,
+    "la_h_index_now": 25.0
+  },
+  "n_authors": 7,
+  "n_institutions": 3,
+  "n_references_med": 30.0,
+  "abstract_n_words_med": 243.0,
+  "title_n_words_med": 16.0,
+  "flesch_med": 19.4,
+  "n_topics_med": 3.0,
+  "subfield_size_med": 3594.0,
+  "subfield_year_count_med": 671.0,
+  "subfield_growth_med": 1.0052539404553416,
+  "nov_c_med": 0.4,
+  "asj_c3_med": 4.0,
+  "asj_c3_p75": 8.0,
+  "all_c3_med": 5.0
+}
