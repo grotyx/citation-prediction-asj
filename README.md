@@ -57,3 +57,14 @@ requirements.txt
 ## Limitations
 
 Prediction at submission has an intrinsic ceiling; citation also depends on post-publication factors (timeliness, promotion, chance). Citation labels come from OpenAlex, which differs in absolute counts from subscription indices. Some inputs (e.g., country) could encode bias and must not substitute for content review.
+
+## Author
+
+**Professor Sang-Min Park, M.D., Ph.D.**
+Department of Orthopaedic Surgery, Seoul National University Bundang Hospital,
+Seoul National University College of Medicine
+🌐 [sangmin.me](https://sangmin.me/)
+
+## License
+
+BSD 3-Clause — see [LICENSE](LICENSE).
