@@ -1,5 +1,7 @@
 # Spine Citation Predictor 📈
 
+🔗 **Live app:** https://asj-citation.streamlit.app/
+
 A web app that estimates the **future citation impact of a spine manuscript at the time of submission**, using only information available before publication (title, abstract, reference count, article type). It is the deployable companion to the study *"Predicting Citation Impact of Spine Research at the Time of Submission."*
 
 > ⚠️ **Auxiliary triage aid only.** This tool supports — but does not replace — scientific peer review. It must never be used as a determinant of acceptance or rejection.
@@ -14,6 +16,8 @@ For a pasted title/abstract (or an uploaded manuscript PDF):
 | **3-year expected citations** | Predicted citations ~3 years after publication, with a rough range and comparison to the ASJ / field average. |
 | **Field top-10% probability** | Probability of top 10% across all 13 spine journals (Model A, reference only). |
 | **Score drivers** | Which factors raise/lower the score (reference count, review/meta-analysis, topic novelty, abstract length). |
+
+The review/meta-analysis flag is suggested automatically — from a keyword match on the title/abstract in the manual-entry tab, or from the PDF's `Manuscript Type`/`Article Type` field in the upload tab — and can be overridden by hand.
 
 ## Model
 
@@ -36,7 +40,9 @@ Open the URL Streamlit prints (default http://localhost:8501). The first run dow
 
 ## Deploy
 
-Works on **Streamlit Community Cloud** or **Hugging Face Spaces** (Streamlit SDK): point it at this repo with `app.py` as the entry point. No GPU or secrets required.
+Deployed on **Streamlit Community Cloud**: https://asj-citation.streamlit.app/
+
+Also works on **Hugging Face Spaces** (Streamlit SDK): point it at this repo with `app.py` as the entry point. No GPU or secrets required.
 
 ## Files
 
