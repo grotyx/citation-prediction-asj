@@ -27,6 +27,24 @@ RX = {
     "sw_guideline": r"guideline|consensus|recommendation",
 }
 
+# UI-only heuristic (not a model feature): flags likely review/meta-analysis
+# manuscripts so the "리뷰/메타분석 논문" checkbox can be pre-suggested to the
+# user in the manual-entry tab, where no "Manuscript Type" field exists.
+REVIEW_HINT_RX = re.compile(
+    r"\bnarrative review\b|\bsystematic review\b|\bscoping review\b|\bumbrella review\b"
+    r"|\bstate-of-the-art review\b|\breview article\b|\bliterature review\b|meta-?analysis",
+    re.I,
+)
+
+
+def review_hint(title, abstract):
+    """Return True if title/abstract text suggests a review or meta-analysis manuscript.
+
+    Heuristic only — used to suggest a checkbox default in the UI, never fed to the model.
+    """
+    text = f"{title or ''} {abstract or ''}"
+    return bool(REVIEW_HINT_RX.search(text))
+
 
 @lru_cache(maxsize=1)
 def _models():

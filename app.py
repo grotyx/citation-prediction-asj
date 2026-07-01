@@ -75,7 +75,19 @@ with tab1:
     abstract = st.text_area("초록 (Abstract)", height=200, placeholder="초록 전문을 붙여넣으세요 (영문).")
     c1, c2 = st.columns(2)
     n_refs = c1.number_input("참고문헌 수", min_value=0, max_value=300, value=30, step=1)
-    is_review = c2.checkbox("리뷰/메타분석 논문")
+
+    if "review_touched" not in st.session_state:
+        st.session_state.review_touched = False
+    if not st.session_state.review_touched:
+        st.session_state.is_review_cb = scorer.review_hint(title, abstract)
+
+    def _mark_review_touched():
+        st.session_state.review_touched = True
+
+    is_review = c2.checkbox("리뷰/메타분석 논문", key="is_review_cb", on_change=_mark_review_touched)
+    if not st.session_state.review_touched and st.session_state.is_review_cb:
+        st.caption("💡 텍스트 기반 자동 감지 — 아니면 체크 해제하세요.")
+
     if st.button("평가하기", type="primary", use_container_width=True):
         if len((abstract or "").split()) < 20:
             st.error("초록을 20단어 이상 입력해 주세요 (예측 정확도를 위해).")
@@ -102,6 +114,8 @@ with tab2:
         c1, c2 = st.columns(2)
         n2 = c1.number_input("참고문헌 수", min_value=0, max_value=300, value=int(m["n_references"]), step=1, key="pr")
         rev2 = c2.checkbox("리뷰/메타분석 논문", value=bool(m["is_review"]), key="prv")
+        if not m["type_field_found"]:
+            st.caption("⚠️ PDF에서 Manuscript/Article Type 필드를 찾지 못했습니다. 리뷰/메타분석 논문 여부를 직접 확인해 주세요.")
         if st.button("평가하기", type="primary", use_container_width=True, key="pbtn"):
             if len((abstract2 or "").split()) < 20:
                 st.error("초록을 20단어 이상 입력해 주세요.")

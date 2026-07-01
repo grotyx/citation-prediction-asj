@@ -50,7 +50,8 @@ def extract_pdf(path):
                 break
 
     is_review = 0
-    mtype = re.search(r"Manuscript Type:\s*(.+)", p1)
+    mtype = re.search(r"(?:Manuscript|Article)\s*Type:\s*(.+)", p1, re.I)
+    type_field_found = bool(mtype)
     if mtype and "review" in mtype.group(1).lower():
         is_review = 1
 
@@ -68,4 +69,5 @@ def extract_pdf(path):
     return {
         "msid": msid, "title": title, "abstract": abstract,
         "is_review": is_review, "n_references": n_refs, "low_conf": low_conf,
+        "type_field_found": type_field_found,
     }
