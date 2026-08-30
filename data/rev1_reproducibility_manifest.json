@@ -1,0 +1,116 @@
+{
+  "manifest_version": "1.0",
+  "freeze_id": "REV1-20260827-c550d47d361b",
+  "created_at": "2026-08-27T12:36:15+09:00",
+  "scope": "Approved REV1 M1-M5 only",
+  "approved_plan": {
+    "path": "data/analysis_plan.md",
+    "file_sha256": "956aeff1b23e4848494a246b95ba636aee7c3d4213f8801c393de8271604577f",
+    "canonical_sha256": "e17faa968e38c7fc622349840d4b5f9f8cdbaafdefb4ec8af883a59d9b245b4b",
+    "canonicalization": "UTF-8 with LF line endings; replace the complete marked approval-metadata block with the single line <!-- APPROVAL-METADATA-EXCLUDED --> before hashing"
+  },
+  "source_cohort": {
+    "path": "data/features.parquet",
+    "sha256": "c550d47d361b1fb3574d89de9ef6f0c1d53bd05125f7cbf85ca0c2b6a8c5e808",
+    "rows": 13299,
+    "unique_work_ids": 13299,
+    "publication_years": [2018, 2019, 2020, 2021, 2022, 2023],
+    "document_types": {"article": 11770, "review": 1529},
+    "work_id_projection": {
+      "path": "data/features.parquet::id",
+      "canonicalization": "unique work IDs sorted lexicographically, UTF-8, one ID per line, final LF",
+      "sha256": "60e2b7905907a4d9c98156f1a0cc3ddaf5a4482bd5818b16fdc15ca469388313"
+    },
+    "duplicate_resolution": "scripts/02_features.py keeps the first raw row per OpenAlex work ID; the frozen raw file contains 28756 rows, 28756 unique IDs, and zero duplicate IDs",
+    "duplicate_count": 0
+  },
+  "retrieval_and_snapshot_metadata": {
+    "openalex_retrieval_recorded_in_manuscript": "June 2026 (month only)",
+    "local_workflow_interval": "2026-06-29 through 2026-07-01 Asia/Seoul",
+    "raw_source_last_write": "2026-07-01T01:09:48+09:00",
+    "citation_snapshot": "The cited_by_count values frozen in data/features.parquet; no per-record retrieval timestamp exists locally. Local logs/file times show a mixed retrieval interval ending 2026-07-01T01:09:48+09:00.",
+    "notes": "The local source does not support a more precise single retrieval or citation-snapshot date; no date was invented."
+  },
+  "frozen_sources": [
+    {"path": "data/raw_works.jsonl", "sha256": "2025a016218a09546de8fa8c1aaa00b8ff1ee2a1d490712cf11727741fed6cf0", "role": "raw OpenAlex work records and local author-ID availability"},
+    {"path": "data/author_features.parquet", "sha256": "ee0b27100a5beaa2b79ed448d13ce83d2223f46392445f6ff81de4acb6ba8fc9", "role": "frozen first/last-author preceding-year derived counts"},
+    {"path": "data/features_v3extra.parquet", "sha256": "1722037a4280013eea78632bbfefaada6a36a18e4fbf835a2bf109c3b044fe87", "role": "text-derived design/readability and expanded comparator annotations"},
+    {"path": "data/collect.log", "sha256": "57e54cccc9f3e802814b9d4a18cacc5ba71c70bac486a9df7468f63e73037223", "role": "initial retrieval log"},
+    {"path": "data/author.log", "sha256": "0774059a3874431548d4edc48afd95d1b63cc727566218dccc0397abfe1fa5c6", "role": "author retrieval and generation log"}
+  ],
+  "source_workflow_scripts": [
+    {"path": "scripts/01_collect_openalex.py", "sha256": "3701080777eb7cfe4723620652071f5473def5843e549177093b7f6105ac6c63", "role": "initial OpenAlex work retrieval"},
+    {"path": "scripts/31_collect_1819.py", "sha256": "a88349f83408b490be72ed27f549de593b2c955f9af569401d4f3f08e2b31f7b", "role": "2018-2019 append retrieval"},
+    {"path": "scripts/02_features.py", "sha256": "288423a717cda445de5adc5535d9f255862f87380dc732d4325afc6cd9fe78b9", "role": "cohort construction and outcome labels"},
+    {"path": "scripts/07_author_features.py", "sha256": "f6baa205f0410eab87b471a915a32847508e6d0c87ad4315cfba5d99e31c7489", "role": "author counts summed only through publication year minus one"},
+    {"path": "scripts/13_features_v3.py", "sha256": "62c2c26062eae4afcb9a73a0b304238fa6bb44e3319536c3a04f9d6c7b8dc435", "role": "text-derived design/readability and expanded annotations"}
+  ],
+  "author_feature_audit": {
+    "time_bound": "scripts/07_author_features.py prior() sums counts_by_year only when year <= index publication year - 1",
+    "retrieval_log": "23119 of 23120 unique source-workflow author IDs returned by the API",
+    "cohort_author_source_coverage": "13298 of 13299 cohort works have an author-feature row",
+    "structural_missingness_from_frozen_raw": {"first_author_id_missing_works": 417, "last_author_id_missing_works": 625, "either_missing_works": 728, "no_authorship_row": 1},
+    "analysis_rule": "Set first- or last-author measures to missing when that role has no source author ID; leave frozen zero values intact when the corresponding source author ID exists; do not modify source files.",
+    "known_source_limitation": "The author log does not identify the single API author that was not returned. No evidence locally establishes that this author belongs to the 13299-work cohort; this uncertainty is retained here and no new OpenAlex retrieval is performed."
+  },
+  "text_model": {
+    "model": "sentence-transformers/all-MiniLM-L6-v2",
+    "huggingface_revision": "1110a243fdf4706b3f48f1d95db1a4f5529b4d41",
+    "embedding_dimension": 384,
+    "device": "cpu",
+    "normalization": "L2-normalized embeddings",
+    "missing_abstract_input": "title only"
+  },
+  "environment": {
+    "operating_system": "Windows-11-10.0.26200-SP0",
+    "python": "3.12.10",
+    "packages": {
+      "numpy": "2.2.6",
+      "pandas": "2.3.3",
+      "pyarrow": "22.0.0",
+      "scipy": "1.16.3",
+      "scikit-learn": "1.8.0",
+      "statsmodels": "0.14.6",
+      "sentence-transformers": "6.0.0",
+      "torch": "2.10.0+cu128",
+      "transformers": "5.16.1",
+      "matplotlib": "3.10.8",
+      "Pillow": "12.0.0"
+    }
+  },
+  "random_seeds": {"model": 42, "cross_validation": 42, "bootstrap": 42, "pca": 42},
+  "analysis_script": {
+    "path": "data/py/rev1_focused_analysis.py",
+    "sha256": "c4e299991ac26335258c6b0e19c85674b45cdae6e2ff1eaa1b6f0d283bf44b2c"
+  },
+  "execution": {
+    "status": "COMPLETE_VALIDATED",
+    "started_at": "2026-08-27T12:48:11+09:00",
+    "ended_at": "2026-08-27T12:53:41+09:00",
+    "commands": [
+      "py -m py_compile data/py/rev1_focused_analysis.py",
+      "py data/py/rev1_focused_analysis.py (first launch stopped by a 10-second shell timeout before analysis output)",
+      "py data/py/rev1_focused_analysis.py (completed; wall time 232.3 seconds)",
+      "py - (independent deterministic validation of schemas, provenance, hashes, live labels, threshold locks, Table 2 estimability, seven-file constraint, and Figure 2/Table 3 identity)"
+    ],
+    "validation": {
+      "status": "PASS",
+      "authorized_csv_count": 7,
+      "figure2_table3_consistency": "PASS for Model B and Model A",
+      "live_label_reproduction": "PASS for is_top10 and is_top25_jrnl",
+      "threshold_lock": "PASS; one training-OOF cutoff per model and operating point across both held-out years",
+      "table2_estimability": "PASS; full-rank converged models with finite coefficients and confidence intervals",
+      "project_checker_note": "No manuscript check_numbers/check_gate/verify_all scripts exist in this repository; manuscript/draft gates are not applicable because no manuscript artifact was modified."
+    },
+    "outputs": {
+      "results/rev1_predictor_availability.csv": {"rows": 99, "sha256": "a3f3ccee3fb8c7715cdcbd0bb7ccc0efce1d0207ca8247e4b2c6191aeb0f3aa8"},
+      "results/rev1_model_performance.csv": {"rows": 100, "sha256": "fc6c30d6a792a7ea2bc13bcd7d0db01eca9b02ef3685d7d175c9c25466158e50"},
+      "results/rev1_abstract_checks.csv": {"rows": 36, "sha256": "cd5dd02881c99dc32025506dca67d7b0663dcc7af7aa3a89c05b7b536497517d"},
+      "results/rev1_table2_models.csv": {"rows": 77, "sha256": "3d583b38d3ee7dd5d30b7f75c5871db5c9ba669e597b5cd7842b14ce74dd2c6d"},
+      "results/rev1_threshold_performance.csv": {"rows": 40, "sha256": "422a35d8a52c0c8ef56048d58691bffbd39f3d9da7e353ab0977d939774870a6"},
+      "results/rev1_ablation.csv": {"rows": 10, "sha256": "42922f23e65170f36dc0d4d427de05ee47bfd429545687ac32d586b2f4912649"},
+      "results/rev1_descriptive_checks.csv": {"rows": 30, "sha256": "55e6bef68f7f52ec117d281b12992e4506a5a64219708addb80a1f3512a0a70a"},
+      "results/rev1_figure2_ablation.png": {"bytes": 306357, "sha256": "14b069b48adc59d80058fb22e7c18547898cb81b9ee7873985ec291a6ea9f595"}
+    }
+  }
+}
