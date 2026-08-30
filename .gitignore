@@ -1,0 +1,14 @@
+# Retrieved data and caches (regenerate with the scripts)
+data/*.jsonl
+data/*.parquet
+data/*.log
+data/*.csv
+model/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Secrets
+.env
+*.key
+.claude/
