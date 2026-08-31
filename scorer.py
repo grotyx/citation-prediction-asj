@@ -16,7 +16,6 @@ from functools import lru_cache
 
 import joblib
 import numpy as np
-import pandas as pd
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 MODELS = os.path.join(BASE, "models")

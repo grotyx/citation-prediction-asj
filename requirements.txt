@@ -1,5 +1,5 @@
 streamlit>=1.30
-scikit-learn==1.7.2
+scikit-learn==1.8.0  # must match the version the bundled models were fitted with
 sentence-transformers>=2.2.2
 pandas>=2.0
 numpy>=1.24
