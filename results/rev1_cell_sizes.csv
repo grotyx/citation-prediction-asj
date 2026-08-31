@@ -1,0 +1,7 @@
+analysis_type,statistic,estimate
+journal_year_cell_size,n_cells,73.0
+journal_year_cell_size,median_cell_size,164.0
+journal_year_cell_size,min_cell_size,22.0
+journal_year_cell_size,max_cell_size,491.0
+journal_year_cell_size,cells_below_20,0.0
+journal_year_cell_size,cells_below_40,2.0

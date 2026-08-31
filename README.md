@@ -1,6 +1,6 @@
 # spine-citation-predictor
 
-Code and cohort identifiers for *Citation-Naive Prediction of Future Impact Among Published Spine Articles: A Bibliometric and Temporal Validation Study*.
+Code and cohort identifiers for *Citation-Naive Machine-Learning Prediction of Future Impact Among Published Spine Articles: A Bibliometric and Temporal Validation Study*.
 
 The study asks how far the later citation propensity of a published spine article can be predicted from information that approximates what is available before acceptance. Models were trained on articles published in 2018 to 2021 in 13 spine journals and evaluated, unchanged, in the held-out years 2022 and 2023.
 
@@ -11,6 +11,7 @@ The study asks how far the later citation propensity of a published spine articl
 | `data/work_ids.txt` | The 13,299 OpenAlex work IDs that define the frozen cohort, one per line |
 | `scripts/` | Retrieval and feature construction: OpenAlex collection, cohort and outcome labels, author history counted only through the year preceding publication, and text-derived study-design and readability features |
 | `data/py/rev1_focused_analysis.py` | The analysis that produced every number in the manuscript: the locked reduced and expanded models, the association models, the abstract-availability analyses, the operating thresholds, the feature-group ablation and the descriptive checks |
+| `data/py/rev1_sensitivity_and_export.py` | The three sensitivity analyses prespecified in the submitted manuscript, repeated on the locked reduced model: original articles only, a country-blind model, and fixed 3-year-window labels. It imports the analysis above rather than editing it, because that script verifies its own hash against the manifest |
 | `results/` | The frozen outputs those analyses wrote. Every value in the manuscript, its tables and its supplement can be traced to these files |
 | `data/rev1_reproducibility_manifest.json` | Cohort hash, work-ID list hash, package versions, random seeds and the audit of author-feature availability |
 
@@ -33,6 +34,7 @@ python scripts/02_features.py                 # cohort, outcomes, base features
 python scripts/07_author_features.py          # leakage-safe author history
 python scripts/13_features_v3.py              # text-derived features
 python data/py/rev1_focused_analysis.py       # models, associations, thresholds, ablation
+python data/py/rev1_sensitivity_and_export.py  # prespecified sensitivity analyses
 ```
 
 Each script resolves the project root from its own location; set `CITATION_PREDICTOR_ROOT` to override. Text embeddings use `sentence-transformers/all-MiniLM-L6-v2`; the revision pinned in the manifest is the one that was used. The random seed is 42 throughout.
@@ -45,7 +47,7 @@ The predictors are publication-record proxies, not the submitted versions. Title
 
 ## Citation
 
-Park J, Park SM, Kim HJ, Yeom JS. Citation-Naive Prediction of Future Impact Among Published Spine Articles: A Bibliometric and Temporal Validation Study. *Asian Spine Journal*. Under review.
+Park J, Park SM, Kim HJ, Yeom JS. Citation-Naive Machine-Learning Prediction of Future Impact Among Published Spine Articles: A Bibliometric and Temporal Validation Study. *Asian Spine Journal*. Under review.
 
 ## License
 
