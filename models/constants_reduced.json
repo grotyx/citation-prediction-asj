@@ -1,0 +1,51 @@
+{
+  "predictor_set": "reduced pre-acceptance analog (REV1 locked)",
+  "training_years": [
+    2018,
+    2019,
+    2020,
+    2021
+  ],
+  "embedding_model": "sentence-transformers/all-MiniLM-L6-v2",
+  "embedding_revision": "1110a243fdf4706b3f48f1d95db1a4f5529b4d41",
+  "numeric_features": [
+    "n_authors",
+    "n_institutions",
+    "n_countries",
+    "is_international",
+    "is_review",
+    "title_n_words",
+    "abstract_n_words",
+    "has_abstract",
+    "flesch",
+    "is_rct",
+    "is_sr_meta",
+    "is_cohort",
+    "is_case_report",
+    "fa_prior_works_log1p",
+    "fa_prior_cites_log1p",
+    "la_prior_works_log1p",
+    "la_prior_cites_log1p",
+    "n_references"
+  ],
+  "medians": {
+    "n_authors": 6.0,
+    "n_institutions": 3.0,
+    "n_countries": 1.0,
+    "is_international": 0.0,
+    "title_n_words": 15.0,
+    "abstract_n_words": 277.0,
+    "flesch": 28.7,
+    "n_references": 30.0,
+    "fa_prior_works": 21.0,
+    "fa_prior_cites": 402.5,
+    "la_prior_works": 106.5,
+    "la_prior_cites": 2925.0
+  },
+  "event_rate": {
+    "model_B_within_journal_top25": 0.2526610644257703,
+    "model_A_field_top10": 0.10005602240896358
+  },
+  "source_cohort_sha256": "c550d47d361b1fb3574d89de9ef6f0c1d53bd05125f7cbf85ca0c2b6a8c5e808",
+  "generated_at": "2026-08-31T16:40:40+09:00"
+}

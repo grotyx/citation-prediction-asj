@@ -13,11 +13,17 @@ st.set_page_config(page_title="Spine Citation Predictor", page_icon="📈", layo
 
 # ---------------- header ----------------
 st.title("📈 척추 논문 인용 영향력 예측")
-st.caption("Citation-impact predictor for spine manuscripts · 투고 시점 정보만 사용 (leakage-safe)")
+st.caption("Citation propensity predictor for spine articles · 게재 기록 기반 대리변수 사용")
 
 st.markdown(
-    "제목·초록만으로 **Asian Spine Journal 내 상위 25% 진입 확률**과 **3년 예상 인용수**를 추정합니다. "
-    "투고 시점에 알 수 있는 정보(내용·구조)만 사용하며, **채택/거절 도구가 아닌 보조 트리아지 지표**입니다."
+    "제목·초록으로 **저널 내 인용 상위 25% 진입 확률**을 추정합니다. "
+    "이 점수는 **인용 가능성(citability)** 의 표면적 상관지표이며, 과학적 가치·방법론적 엄밀성·임상적 유용성을 "
+    "측정하지 않습니다. **채택/거절 결정 도구가 아닌 연구 단계 보조 지표**입니다."
+)
+
+st.info(
+    "모델: 개정 논문의 primary 모델과 동일한 **reduced 예측변수 집합** (게재 후 부여되는 OpenAlex 주제·"
+    "subfield 주석, open access 상태, 현재 h-index 제외). 학습 2018–2021 / 검증 2022·2023."
 )
 
 
@@ -31,41 +37,39 @@ def warm():
 def render(res, low_conf=False, msid=None):
     if low_conf:
         st.warning("⚠️ PDF 추출 신뢰도가 낮습니다(초록/참고문헌). 아래 입력값을 확인·수정 후 다시 평가하세요.")
-    p = res["prob_asj_top25"]
+    p = res["prob_injournal_top25"]
     color = res["band_color"]
 
     st.markdown(f"### 결과{f' · {msid}' if msid else ''}")
     st.markdown(
-        f"<div style='font-size:0.9rem;color:#555'>ASJ 내 인용 상위 25% 진입 확률</div>"
+        f"<div style='font-size:0.9rem;color:#555'>저널 내 인용 상위 25% 진입 확률</div>"
         f"<div style='font-size:2.6rem;font-weight:700;color:{color};line-height:1.1'>{p*100:.0f}%"
         f"<span style='font-size:1.1rem;margin-left:.5rem'>{res['band']}</span></div>"
-        f"<div style='font-size:0.85rem;color:#777'>기준선 25% — 높을수록 평균 이상, 낮을수록 평균 이하</div>",
+        f"<div style='font-size:0.85rem;color:#777'>기준선 {res['base_rate_top25']*100:.0f}% (학습 코호트 실제 발생률) — 높을수록 평균 이상</div>",
         unsafe_allow_html=True,
     )
     st.progress(min(1.0, p / 0.6))
 
-    c1, c2 = st.columns(2)
-    with c1:
-        st.metric("3년 예상 인용수", f"{res['cite3y']:.0f}회",
-                  help=f"대략 {res['cite3y_lo']}~{res['cite3y_hi']}회")
-        st.caption(f"ASJ 평균(성숙) {res['asj_c3_med']:.0f}회 · 전체 저널 {res['all_c3_med']:.0f}회")
-    with c2:
-        st.metric("분야 전체 상위 10% 확률", f"{res['prob_field_top10']*100:.0f}%",
-                  help="13개 척추 저널 전체 기준 (참고용)")
+    st.metric("분야 전체 상위 10% 확률 (secondary)", f"{res['prob_field_top10']*100:.0f}%",
+              help=f"13개 척추 저널 전체 기준. 기준선 {res['base_rate_top10']*100:.0f}%. "
+                   "이 모델은 저널 식별자를 사용하므로 판별력이 더 높습니다.")
 
     ups = [(d[0], d[1]) for d in res["drivers"] if d[1] > 0.01]
     dns = [(d[0], d[1]) for d in res["drivers"] if d[1] < -0.01]
     if ups or dns:
         st.markdown("#### 🔑 점수 영향 요인")
+        st.caption("입력값을 코호트 기준값으로 바꿨을 때의 모델 민감도이며, 인과효과가 아닙니다.")
         if ups:
             st.markdown("⬆ **올림:** " + ", ".join(f"{n} (+{v*100:.0f}%p)" for n, v in ups))
         if dns:
             st.markdown("⬇ **내림:** " + ", ".join(f"{n} ({v*100:.0f}%p)" for n, v in dns))
 
-    verdict = ("ASJ 평균보다 인용이 많을" if p >= 0.30
-               else "ASJ 평균 수준으로 인용될" if p >= 0.18
-               else "ASJ 평균보다 인용이 적을")
-    st.info(f"📝 이 논문은 **{verdict} 가능성**으로 예측됩니다. (보조 참고 지표 — 채택/거절 결정 도구 아님)")
+    verdict = ("저널 평균보다 인용이 많을" if p >= 0.30
+               else "저널 평균 수준으로 인용될" if p >= 0.18
+               else "저널 평균보다 인용이 적을")
+    st.info(f"📝 이 논문은 **{verdict} 가능성**으로 예측됩니다. "
+            "(관찰적 상관에 근거한 보조 참고 지표 — 채택/거절 결정 도구 아니며, 점수를 올리기 위한 "
+            "참고문헌 늘리기·초록 길이 조정·논문 유형 선택은 권장되지 않습니다.)")
 
 
 tab1, tab2 = st.tabs(["✍️ 직접 입력", "📄 PDF 업로드"])
@@ -127,7 +131,8 @@ with tab2:
 
 st.divider()
 st.caption(
-    "모델: 13개 척추 저널 2018–2023 (n=13,299), 학습 2018–2021 / 검증 2022·2023. "
-    "Model B(저널 내 상위 25%) ROC-AUC ≈ 0.72. 인용 데이터 출처: OpenAlex. "
-    "본 도구는 연구·편집 보조용이며 동료심사를 대체하지 않습니다."
+    "모델: 13개 척추 저널 2018–2023 (n=13,299), 학습 2018–2021 / 검증 2022·2023 각각. "
+    "논문의 primary 모델(reduced) Model B ROC-AUC 0.721 (2022), 0.706 (2023). "
+    "코호트는 최종 게재된 논문만 포함하며, 거절된 원고에서의 성능은 검증되지 않았습니다. "
+    "인용 데이터 출처: OpenAlex. 본 도구는 연구 보조용이며 동료심사를 대체하지 않습니다."
 )
