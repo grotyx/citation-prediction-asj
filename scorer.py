@@ -32,8 +32,8 @@ RX = {
 
 
 # UI-only heuristic (not a model feature): flags likely review/meta-analysis
-# manuscripts so the "리뷰/메타분석 논문" checkbox can be pre-suggested to the
-# user in the manual-entry tab, where no "Manuscript Type" field exists.
+# manuscripts so the "Review or meta-analysis" checkbox can be pre-suggested to
+# the user in the manual-entry tab, where no "Manuscript Type" field exists.
 REVIEW_HINT_RX = re.compile(
     r"\bnarrative review\b|\bsystematic review\b|\bscoping review\b|\bumbrella review\b"
     r"|\bstate-of-the-art review\b|\breview article\b|\bliterature review\b|meta-?analysis",
@@ -127,12 +127,12 @@ def _proba(pack, f, embedding, journal):
 def band(p):
     """Label for a within-journal top-quartile probability (baseline ~25%)."""
     if p >= 0.40:
-        return "상위권 가능성 높음", "#1a7f37"
+        return "well above average", "#1a7f37"
     if p >= 0.30:
-        return "평균 이상", "#1f6feb"
+        return "above average", "#1f6feb"
     if p >= 0.18:
-        return "평균 수준", "#9a6700"
-    return "평균 이하", "#cf222e"
+        return "about average", "#9a6700"
+    return "below average", "#cf222e"
 
 
 def explain(pack, f, embedding, journal, pbase):
@@ -148,12 +148,12 @@ def explain(pack, f, embedding, journal, pbase):
         "title_n_words": MED["title_n_words"],
     }
     labels = {
-        "n_references": "참고문헌 수",
-        "abstract_n_words": "초록 길이",
-        "is_review": "리뷰 논문 여부",
-        "is_sr_meta": "메타분석/SR 여부",
-        "is_rct": "RCT 여부",
-        "title_n_words": "제목 길이",
+        "n_references": "reference count",
+        "abstract_n_words": "abstract length",
+        "is_review": "review article",
+        "is_sr_meta": "systematic review or meta-analysis",
+        "is_rct": "randomized controlled trial",
+        "title_n_words": "title length",
     }
     out = []
     for k, bv in baseline.items():

@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
-"""Spine manuscript citation-impact predictor — Streamlit web app.
+"""Spine article citation-propensity predictor — Streamlit web app.
 
 Run locally:  streamlit run app.py
 """
 import os
 import tempfile
+
 import streamlit as st
 
 import scorer
@@ -12,22 +13,25 @@ import scorer
 st.set_page_config(page_title="Spine Citation Predictor", page_icon="📈", layout="centered")
 
 # ---------------- header ----------------
-st.title("📈 척추 논문 인용 영향력 예측")
-st.caption("Citation propensity predictor for spine articles · 게재 기록 기반 대리변수 사용")
+st.title("📈 Spine Citation Predictor")
+st.caption("Citation-propensity estimates for spine articles, from publication-record proxies")
 
 st.markdown(
-    "제목·초록으로 **저널 내 인용 상위 25% 진입 확률**을 추정합니다. "
-    "이 점수는 **인용 가능성(citability)** 의 표면적 상관지표이며, 과학적 가치·방법론적 엄밀성·임상적 유용성을 "
-    "측정하지 않습니다. **채택/거절 결정 도구가 아닌 연구 단계 보조 지표**입니다."
+    "Estimates the probability that an article reaches the **top 25% of citations within its "
+    "journal and year**, from its title, abstract, reference count and article type. The score is a "
+    "surface-level correlate of **citability**. It does not measure scientific merit, "
+    "methodological rigor, or clinical value, and it is **a research adjunct, not a basis for "
+    "accept-or-reject decisions**."
 )
 
 st.info(
-    "모델: 개정 논문의 primary 모델과 동일한 **reduced 예측변수 집합** (게재 후 부여되는 OpenAlex 주제·"
-    "subfield 주석, open access 상태, 현재 h-index 제외). 학습 2018–2021 / 검증 2022·2023."
+    "Model: the reduced predictor set reported as primary in the study — variables OpenAlex records "
+    "only after publication (topic and subfield annotations, open-access status, current h-index) "
+    "are excluded. Trained on 2018–2021, evaluated in 2022 and 2023."
 )
 
 
-@st.cache_resource(show_spinner="모델·임베딩 로딩 중… (최초 1회, 수십 초 소요)")
+@st.cache_resource(show_spinner="Loading the model and text encoder… (first run takes ~30 s)")
 def warm():
     scorer._models()
     scorer._encoder()
@@ -36,49 +40,67 @@ def warm():
 
 def render(res, low_conf=False, msid=None):
     if low_conf:
-        st.warning("⚠️ PDF 추출 신뢰도가 낮습니다(초록/참고문헌). 아래 입력값을 확인·수정 후 다시 평가하세요.")
+        st.warning(
+            "⚠️ The abstract or reference count was extracted with low confidence. "
+            "Check the values above and score again."
+        )
     p = res["prob_injournal_top25"]
     color = res["band_color"]
 
-    st.markdown(f"### 결과{f' · {msid}' if msid else ''}")
+    st.markdown(f"### Result{f' · {msid}' if msid else ''}")
     st.markdown(
-        f"<div style='font-size:0.9rem;color:#555'>저널 내 인용 상위 25% 진입 확률</div>"
+        f"<div style='font-size:0.9rem;color:#555'>Probability of within-journal top 25%</div>"
         f"<div style='font-size:2.6rem;font-weight:700;color:{color};line-height:1.1'>{p*100:.0f}%"
         f"<span style='font-size:1.1rem;margin-left:.5rem'>{res['band']}</span></div>"
-        f"<div style='font-size:0.85rem;color:#777'>기준선 {res['base_rate_top25']*100:.0f}% (학습 코호트 실제 발생률) — 높을수록 평균 이상</div>",
+        f"<div style='font-size:0.85rem;color:#777'>Baseline {res['base_rate_top25']*100:.0f}% "
+        f"(observed rate in the training cohort)</div>",
         unsafe_allow_html=True,
     )
     st.progress(min(1.0, p / 0.6))
 
-    st.metric("분야 전체 상위 10% 확률 (secondary)", f"{res['prob_field_top10']*100:.0f}%",
-              help=f"13개 척추 저널 전체 기준. 기준선 {res['base_rate_top10']*100:.0f}%. "
-                   "이 모델은 저널 식별자를 사용하므로 판별력이 더 높습니다.")
+    st.metric(
+        "Probability of field-wide top 10% (secondary)",
+        f"{res['prob_field_top10']*100:.0f}%",
+        help=f"Across all 13 spine journals. Baseline {res['base_rate_top10']*100:.0f}%. "
+             "This model also sees journal identity, which is why it discriminates better.",
+    )
 
     ups = [(d[0], d[1]) for d in res["drivers"] if d[1] > 0.01]
     dns = [(d[0], d[1]) for d in res["drivers"] if d[1] < -0.01]
     if ups or dns:
-        st.markdown("#### 🔑 점수 영향 요인")
-        st.caption("입력값을 코호트 기준값으로 바꿨을 때의 모델 민감도이며, 인과효과가 아닙니다.")
+        st.markdown("#### 🔑 What moved the score")
+        st.caption(
+            "Change in the predicted probability when one input is replaced by its cohort "
+            "baseline. These are model sensitivities, not causal effects."
+        )
         if ups:
-            st.markdown("⬆ **올림:** " + ", ".join(f"{n} (+{v*100:.0f}%p)" for n, v in ups))
+            st.markdown("⬆ **Raised it:** " + ", ".join(f"{n} (+{v*100:.0f} pp)" for n, v in ups))
         if dns:
-            st.markdown("⬇ **내림:** " + ", ".join(f"{n} ({v*100:.0f}%p)" for n, v in dns))
+            st.markdown("⬇ **Lowered it:** " + ", ".join(f"{n} ({v*100:.0f} pp)" for n, v in dns))
 
-    verdict = ("저널 평균보다 인용이 많을" if p >= 0.30
-               else "저널 평균 수준으로 인용될" if p >= 0.18
-               else "저널 평균보다 인용이 적을")
-    st.info(f"📝 이 논문은 **{verdict} 가능성**으로 예측됩니다. "
-            "(관찰적 상관에 근거한 보조 참고 지표 — 채택/거절 결정 도구 아니며, 점수를 올리기 위한 "
-            "참고문헌 늘리기·초록 길이 조정·논문 유형 선택은 권장되지 않습니다.)")
+    verdict = ("above the journal average" if p >= 0.30
+               else "around the journal average" if p >= 0.18
+               else "below the journal average")
+    st.info(
+        f"📝 This article is predicted to be cited **{verdict}**. These are observational "
+        "associations. The score is not a basis for accept-or-reject decisions, and padding "
+        "reference lists, adjusting abstract length, or choosing an article type to raise it does "
+        "not address what actually earns citations."
+    )
 
 
-tab1, tab2 = st.tabs(["✍️ 직접 입력", "📄 PDF 업로드"])
+tab1, tab2 = st.tabs(["✍️ Enter manually", "📄 Upload a PDF"])
 
 with tab1:
-    title = st.text_input("제목 (Title)", placeholder="예: Contemporary outcomes after single-level lumbar fusion ...")
-    abstract = st.text_area("초록 (Abstract)", height=200, placeholder="초록 전문을 붙여넣으세요 (영문).")
+    title = st.text_input(
+        "Title",
+        placeholder="e.g. Contemporary outcomes after single-level lumbar fusion ...",
+    )
+    abstract = st.text_area(
+        "Abstract", height=200, placeholder="Paste the full abstract (English)."
+    )
     c1, c2 = st.columns(2)
-    n_refs = c1.number_input("참고문헌 수", min_value=0, max_value=300, value=30, step=1)
+    n_refs = c1.number_input("Number of references", min_value=0, max_value=300, value=30, step=1)
 
     if "review_touched" not in st.session_state:
         st.session_state.review_touched = False
@@ -88,23 +110,26 @@ with tab1:
     def _mark_review_touched():
         st.session_state.review_touched = True
 
-    is_review = c2.checkbox("리뷰/메타분석 논문", key="is_review_cb", on_change=_mark_review_touched)
+    is_review = c2.checkbox(
+        "Review or meta-analysis", key="is_review_cb", on_change=_mark_review_touched
+    )
     if not st.session_state.review_touched and st.session_state.is_review_cb:
-        st.caption("💡 텍스트 기반 자동 감지 — 아니면 체크 해제하세요.")
+        st.caption("💡 Detected from the text — untick if that is wrong.")
 
-    if st.button("평가하기", type="primary", use_container_width=True):
+    if st.button("Score", type="primary", use_container_width=True):
         if len((abstract or "").split()) < 20:
-            st.error("초록을 20단어 이상 입력해 주세요 (예측 정확도를 위해).")
+            st.error("Please enter an abstract of at least 20 words.")
         else:
             warm()
-            with st.spinner("평가 중…"):
+            with st.spinner("Scoring…"):
                 res = scorer.score(title, abstract, int(n_refs), is_review)
             render(res)
 
 with tab2:
-    up = st.file_uploader("원고 PDF 업로드", type=["pdf"])
+    up = st.file_uploader("Upload the manuscript PDF", type=["pdf"])
     if up is not None:
         import pdf_extract
+
         with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tf:
             tf.write(up.getbuffer())
             tmp = tf.name
@@ -112,27 +137,35 @@ with tab2:
             m = pdf_extract.extract_pdf(tmp)
         finally:
             os.unlink(tmp)
-        st.success("추출 완료 — 값을 확인/수정한 뒤 평가하세요.")
-        title2 = st.text_input("제목", value=m["title"], key="pt")
-        abstract2 = st.text_area("초록", value=m["abstract"], height=180, key="pa")
+        st.success("Extracted — check the values below, then score.")
+        title2 = st.text_input("Title", value=m["title"], key="pt")
+        abstract2 = st.text_area("Abstract", value=m["abstract"], height=180, key="pa")
         c1, c2 = st.columns(2)
-        n2 = c1.number_input("참고문헌 수", min_value=0, max_value=300, value=int(m["n_references"]), step=1, key="pr")
-        rev2 = c2.checkbox("리뷰/메타분석 논문", value=bool(m["is_review"]), key="prv")
+        n2 = c1.number_input(
+            "Number of references", min_value=0, max_value=300,
+            value=int(m["n_references"]), step=1, key="pr",
+        )
+        rev2 = c2.checkbox("Review or meta-analysis", value=bool(m["is_review"]), key="prv")
         if not m["type_field_found"]:
-            st.caption("⚠️ PDF에서 Manuscript/Article Type 필드를 찾지 못했습니다. 리뷰/메타분석 논문 여부를 직접 확인해 주세요.")
-        if st.button("평가하기", type="primary", use_container_width=True, key="pbtn"):
+            st.caption(
+                "⚠️ No Manuscript/Article Type field was found in the PDF. "
+                "Please set the review flag yourself."
+            )
+        if st.button("Score", type="primary", use_container_width=True, key="pbtn"):
             if len((abstract2 or "").split()) < 20:
-                st.error("초록을 20단어 이상 입력해 주세요.")
+                st.error("Please enter an abstract of at least 20 words.")
             else:
                 warm()
-                with st.spinner("평가 중…"):
+                with st.spinner("Scoring…"):
                     res = scorer.score(title2, abstract2, int(n2), rev2)
                 render(res, low_conf=m["low_conf"], msid=m["msid"])
 
 st.divider()
 st.caption(
-    "모델: 13개 척추 저널 2018–2023 (n=13,299), 학습 2018–2021 / 검증 2022·2023 각각. "
-    "논문의 primary 모델(reduced) Model B ROC-AUC 0.721 (2022), 0.706 (2023). "
-    "코호트는 최종 게재된 논문만 포함하며, 거절된 원고에서의 성능은 검증되지 않았습니다. "
-    "인용 데이터 출처: OpenAlex. 본 도구는 연구 보조용이며 동료심사를 대체하지 않습니다."
+    "13 spine journals, 2018–2023 (n=13,299); trained on 2018–2021 and evaluated separately in 2022 "
+    "and 2023. Primary reduced Model B ROC-AUC 0.721 (2022) and 0.706 (2023). The cohort contains "
+    "only articles that were ultimately published, so performance in a submission pool containing "
+    "rejected manuscripts is untested. Citation data from OpenAlex. This tool is a research adjunct "
+    "and does not replace peer review. "
+    "[Code and data](https://github.com/grotyx/citation-prediction-asj)"
 )

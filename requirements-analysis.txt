@@ -1,0 +1,12 @@
+# Versions recorded in data/rev1_reproducibility_manifest.json
+numpy==2.2.6
+pandas==2.3.3
+pyarrow==22.0.0
+scipy==1.16.3
+scikit-learn==1.8.0
+statsmodels==0.14.6
+sentence-transformers==6.0.0
+torch==2.10.0
+transformers==5.16.1
+matplotlib==3.10.8
+requests>=2.31.0
