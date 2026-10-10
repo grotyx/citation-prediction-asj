@@ -28,6 +28,9 @@ header[data-testid="stHeader"],footer,#MainMenu{display:none}
 .ks-top img{width:40px;height:40px}
 .ks-top b{display:block;font-size:1.15rem;color:var(--ink);letter-spacing:-.01em}
 .ks-top span{display:block;font-size:.68rem;letter-spacing:.06em;color:var(--soft)}
+.ks-top .ks-sep{width:1px;height:32px;background:#d1d5db;margin:0 .6rem}
+.ks-top img.ks-asj{width:auto;height:26px;display:block}
+@media (max-width:640px){.ks-top{flex-wrap:wrap}.ks-top .ks-sep{display:none}.ks-top a{flex-basis:100%}.ks-top img.ks-asj{height:20px}}
 .ks-eyebrow{font-size:.8rem;font-weight:700;letter-spacing:.2em;color:var(--navy);margin:0 0 .6rem;text-transform:uppercase}
 .ks-hero h1{font-size:2.9rem;line-height:1.18;font-weight:800;color:var(--ink);letter-spacing:-.03em;margin:0 0 1.8rem;padding:0}
 .ks-mission{border-left:2px solid var(--navy);padding:.2rem 0 .2rem 1.1rem;margin-bottom:2.5rem}
@@ -64,12 +67,17 @@ header[data-testid="stHeader"],footer,#MainMenu{display:none}
 )
 
 # ---------------- header ----------------
-with open(EMBLEM, "rb") as fh:
-    emblem_b64 = base64.b64encode(fh.read()).decode()
+def _b64(name):
+    with open(os.path.join(BASE, "assets", name), "rb") as fh:
+        return base64.b64encode(fh.read()).decode()
+
 
 st.markdown(
-    f"<div class='ks-top'><img src='data:image/png;base64,{emblem_b64}' alt=''>"
-    "<div><b>대한척추외과학회</b><span>KOREAN SOCIETY OF SPINE SURGERY</span></div></div>"
+    f"<div class='ks-top'><img src='data:image/png;base64,{_b64('ksss_emblem.png')}' alt=''>"
+    "<div><b>대한척추외과학회</b><span>KOREAN SOCIETY OF SPINE SURGERY</span></div>"
+    "<i class='ks-sep'></i><a href='https://www.asianspinejournal.org/' target='_blank'>"
+    f"<img class='ks-asj' src='data:image/png;base64,{_b64('asj_wordmark.png')}' "
+    "alt='Asian Spine Journal'></a></div>"
     "<div class='ks-hero'><p class='ks-eyebrow'>Spine Citation Predictor</p>"
     "<h1>How citable is<br>this spine article?</h1>"
     "<div class='ks-mission'><p class='ks-eyebrow'>About the score</p>"
