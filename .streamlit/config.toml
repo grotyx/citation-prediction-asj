@@ -1,0 +1,14 @@
+# Visual identity of spine.or.kr (Korean Society of Spine Surgery)
+[theme]
+base = "light"
+primaryColor = "#293f94"
+backgroundColor = "#f7f5f0"
+secondaryBackgroundColor = "#ffffff"
+textColor = "#1f2937"
+borderColor = "#d1d5db"
+showWidgetBorder = true
+baseRadius = "0.5rem"
+font = "Pretendard, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif"
+
+[client]
+toolbarMode = "minimal"

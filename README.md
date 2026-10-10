@@ -1,4 +1,4 @@
-# Spine Citation Predictor 📈
+# Spine Citation Predictor
 
 🔗 **Live app:** https://asj-citation.streamlit.app/
 
